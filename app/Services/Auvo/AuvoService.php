@@ -8,6 +8,7 @@ use App\Models\Ileva\IlevaAccidentInvolved;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Laravel\Octane\Facades\Octane;
+use App\Services\Auvo\AuvoData;
 
 class AuvoService
 {
@@ -45,8 +46,9 @@ class AuvoService
 
     public function updateCustomers(array $customers, ?string $prefixExternalId = null): void
     {
+        $auvoData = new AuvoData();
         foreach ($customers as $customer) {
-            UpdateAuvoCustomerJob::dispatch($this->accessToken, $customer, $prefixExternalId);
+            UpdateAuvoCustomerJob::dispatch($this->accessToken, $customer, $prefixExternalId, $auvoData->getAuvoData());
         }
     }
 
