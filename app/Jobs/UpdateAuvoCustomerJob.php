@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class UpdateAuvoCustomerJob implements ShouldQueue
@@ -22,7 +23,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
         protected readonly string $accessToken,
         protected $customer,
         protected readonly ?string $prefixExternalId,
-        protected array $colaboradores
+        protected Collection $colaboradores // Alterado para Collection
     ) {
     }
 
