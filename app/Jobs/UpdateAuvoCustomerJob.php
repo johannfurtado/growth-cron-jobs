@@ -30,7 +30,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
     /**
      * Execute the job.
      */
-        public function handle(PendingRequest $client): void
+    public function handle(PendingRequest $client): void
     {
         $client = $client->baseUrl(env('AUVO_API_URL'))
             ->withHeaders([
@@ -59,8 +59,8 @@ class UpdateAuvoCustomerJob implements ShouldQueue
                 Log::error("Error updating customer {$this->customer->id}:  {$response->body()}");
             }
 
-            // Despachar o job para criar tarefas
-            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer->id, $this->customer->id_oficina));
+            $idOficina = $this->customer->id_oficina ?? 0;
+            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer->id, $idOficina, $this->accessToken));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
