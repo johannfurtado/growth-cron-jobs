@@ -5,12 +5,12 @@ namespace App\Jobs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use App\Models\Task;
+use Illuminate\Support\Facades\Http;
 
 class CreateTasksAuvoJob implements ShouldQueue
 {
@@ -39,15 +39,17 @@ class CreateTasksAuvoJob implements ShouldQueue
      *
      * @return void
      */
-    public function handle(PendingRequest $client): void
+    public function handle(): void
     {
         Log::info("Handling CreateTasksAuvoJob for customer: {$this->customerId}");
 
-        $client = $client->baseUrl(env('AUVO_API_URL'))
+        $client = Http::baseUrl(env('AUVO_API_URL'))
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->accessToken,
                 'Content-Type' => 'application/json',
-            ]);
+            ])
+            ->timeout(30)
+            ->retry(3, 100);
 
         $oficina = $this->getOficinaById($this->idOficina);
 
@@ -56,17 +58,8 @@ class CreateTasksAuvoJob implements ShouldQueue
             return;
         }
 
-        Log::info("Oficina found: " . json_encode($oficina));
-
         $validTaskType = 153068;
         $validQuestionnaireId = 178968;
-
-        if (!$this->isCustomerIdValid($this->customerId, $client)) {
-            Log::error("Customer ID {$this->customerId} not found. Additional action may be required.");
-            return;
-        }
-
-        Log::info("Customer ID {$this->customerId} is valid.");
 
         foreach ($this->colaboradores as $colaborador) {
             if (!isset($colaborador['id'])) {
@@ -74,58 +67,60 @@ class CreateTasksAuvoJob implements ShouldQueue
                 continue;
             }
 
-            Log::info("Processing colaborador ID: {$colaborador['id']}");
+            for ($i = 0; $i < 60; $i++) {
+                $currentDate = new \DateTime("now", new \DateTimeZone('America/Sao_Paulo'));
+                $currentDate->modify("+{$i} days");
+                $dayOfWeek = $currentDate->format('l');
 
-            foreach ($oficina['diasSemana'] as $diaSemana) {
-                $taskDate = $this->getNextDateByDayOfWeek($diaSemana, $oficina['horaInicio']);
+                if (in_array($dayOfWeek, $oficina['diasSemana'])) {
+                    $taskDate = $this->getDateTimeForDay($currentDate, $oficina['horaInicio']);
 
-                Log::info("Generated task date: {$taskDate} for diaSemana: {$diaSemana}");
+                    $existingTask = Task::where('auvo_id_task', $this->customerId)->first();
 
-                $existingTask = Task::where('auvo_id_task', $this->customerId)->first();
-
-                if ($existingTask) {
-                    Log::info("Task for customer {$this->customerId} already exists with ID {$existingTask->auvo_id_task}.");
-                    continue;
-                }
-
-                $taskData = [
-                    'taskType' => $validTaskType,
-                    'idUserFrom' => 163489,
-                    'idUserTo' => $colaborador['id'],
-                    'taskDate' => $taskDate,
-                    'address' => $oficina['endereco'],
-                    'orientation' => 'INSPEÇÃO DE QUALIDADE',
-                    'priority' => 1,
-                    'questionnaireId' => $validQuestionnaireId,
-                    'customerId' => $this->customerId,
-                    'checkinType' => 1,
-                    'keyWords' => [1],
-                ];
-
-                Log::info("Sending task data: " . json_encode($taskData));
-
-                try {
-                    $response = $client->put('tasks', $taskData);
-
-                    Log::info("API response status: {$response->status()}");
-                    Log::info("API response body: " . $response->body());
-
-                    if (in_array($response->status(), [200, 201])) {
-                        Log::info("Task created for customer {$this->customerId} on date: {$taskDate}");
-                        $responseData = $response->json();
-                        if (isset($responseData['result']['taskID'])) {
-                            Log::info("Task ID: {$responseData['result']['taskID']}");
-                            Task::create([
-                                'auvo_id_task' => $responseData['result']['taskID'],
-                            ]);
-                        } else {
-                            Log::error("Task ID not found in response: " . json_encode($responseData));
-                        }
-                    } else {
-                        Log::error("Error creating task for customer {$this->customerId} on date: {$taskDate}: {$response->body()}");
+                    if ($existingTask) {
+                        Log::info("Task for customer {$this->customerId} already exists with ID {$existingTask->auvo_id_task}.");
+                        continue;
                     }
-                } catch (\Exception $e) {
-                    Log::error("Exception creating task for customer {$this->customerId} on date: {$taskDate}: " . $e->getMessage());
+
+                    $taskData = [
+                        'taskType' => $validTaskType,
+                        'idUserFrom' => 163489,
+                        'idUserTo' => $colaborador['id'],
+                        'taskDate' => $taskDate,
+                        'address' => $oficina['endereco'],
+                        'orientation' => 'INSPEÇÃO DE QUALIDADE',
+                        'priority' => 1,
+                        'questionnaireId' => $validQuestionnaireId,
+                        'customerExternalId' => "{$this->customerId}",
+                        'checkinType' => 1,
+                        'keyWords' => [1],
+                    ];
+
+                    Log::info("Sending task data: " . json_encode($taskData));
+
+                    try {
+                        $response = $client->put('tasks', $taskData);
+
+                        Log::info("API response status: {$response->status()}");
+                        Log::info("API response: " . $response);
+
+                        if (in_array($response->status(), [200, 201])) {
+                            Log::info("Task created for customer {$this->customerId} on date: {$taskDate}");
+                            $responseData = $response->json();
+                            if (isset($responseData['result']['taskID'])) {
+                                Log::info("Task ID: {$responseData['result']['taskID']}");
+                                Task::create([
+                                    'auvo_id_task' => $responseData['result']['taskID'],
+                                ]);
+                            } else {
+                                Log::error("Task ID not found in response: " . json_encode($responseData));
+                            }
+                        } else {
+                            Log::error("Error creating task for customer {$this->customerId} on date: {$taskDate}: {$response->body()}");
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Exception creating task for customer {$this->customerId} on date: {$taskDate}: " . $e->getMessage());
+                    }
                 }
             }
         }
@@ -134,10 +129,8 @@ class CreateTasksAuvoJob implements ShouldQueue
     private function getOficinaById(int $idOficina): ?array
     {
         foreach ($this->colaboradores as $colaborador) {
-            Log::info("Checking colaborador: " . json_encode($colaborador));
             if (isset($colaborador['ids_oficina'])) {
                 foreach ($colaborador['ids_oficina'] as $oficina) {
-                    Log::info("Checking oficina: " . json_encode($oficina));
                     if (isset($oficina['id']) && $oficina['id'] == $idOficina) {
                         return $oficina;
                     }
@@ -148,28 +141,11 @@ class CreateTasksAuvoJob implements ShouldQueue
         return null;
     }
 
-    private function getNextDateByDayOfWeek(string $dayOfWeek, string $horaInicio): string
+    private function getDateTimeForDay(\DateTime $date, string $horaInicio): string
     {
-        $date = new \DateTime("now", new \DateTimeZone('America/Sao_Paulo'));
-        $date->modify("next $dayOfWeek");
-
         list($hours, $minutes) = explode(':', $horaInicio);
         $date->setTime((int)$hours, (int)$minutes);
 
         return $date->format('Y-m-d\TH:i:s');
-    }
-
-    private function isCustomerIdValid(int $customerId, PendingRequest $client): bool
-    {
-        try {
-            $response = $client->get("customers/{$customerId}");
-            Log::info("Customer validation request for ID {$customerId}");
-            Log::info("Customer validation response status: {$response->status()}");
-            Log::info("Customer validation response body: " . $response->body());
-            return $response->status() === 200;
-        } catch (\Exception $e) {
-            Log::error("Error verifying customer ID {$customerId}: {$e->getMessage()}");
-            return false;
-        }
     }
 }
