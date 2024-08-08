@@ -60,7 +60,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
             }
 
             $idOficina = $this->customer->id_oficina ?? 0;
-            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer->id, $idOficina, $this->accessToken));
+            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer->id, $idOficina, $this->accessToken, $this->customer->orientation));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
