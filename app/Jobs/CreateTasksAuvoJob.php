@@ -52,6 +52,12 @@ class CreateTasksAuvoJob implements ShouldQueue
                 continue;
             }
 
+            // Verificar se o colaborador é responsável pela oficina específica
+            if (!$this->isColaboradorResponsavelPelaOficina($colaborador, $this->idOficina)) {
+                Log::info("Colaborador {$colaborador['id']} não é responsável pela oficina {$this->idOficina}.");
+                continue;
+            }
+
             $this->createTasksForColaborador($client, $colaborador, $oficina, $validTaskType, $validQuestionnaireId);
         }
     }
@@ -159,5 +165,17 @@ class CreateTasksAuvoJob implements ShouldQueue
         $date->setTime((int)$hours, (int)$minutes);
 
         return $date->format('Y-m-d\TH:i:s');
+    }
+
+    private function isColaboradorResponsavelPelaOficina($colaborador, $idOficina): bool
+    {
+        if (isset($colaborador['ids_oficina'])) {
+            foreach ($colaborador['ids_oficina'] as $oficina) {
+                if (isset($oficina['id']) && $oficina['id'] == $idOficina) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
