@@ -11,29 +11,24 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use App\Models\Task;
 use Illuminate\Support\Facades\Http;
+use Dompdf\Dompdf;
 
 class CreateTasksAuvoJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Collection $colaboradores;
-    protected int $customerId;
-    protected int $idOficina;
-    protected string $accessToken;
-    protected string $orientation;
 
-    public function __construct(Collection $colaboradores, int $customerId, int $idOficina, string $accessToken, string $orientation)
-    {
-        $this->colaboradores = $colaboradores;
-        $this->customerId = $customerId;
-        $this->idOficina = $idOficina;
-        $this->accessToken = $accessToken;
-        $this->orientation = $orientation;
+    public function __construct(
+        protected Collection $colaboradores,
+        protected $customer,
+        protected int $idOficina,
+        protected string $accessToken,
+    ) {
     }
 
     public function handle(): void
     {
-        Log::info("Handling CreateTasksAuvoJob for customer: {$this->customerId}");
+        Log::info("Handling CreateTasksAuvoJob for customer: {$this->customer->id}");
 
         $client = $this->configureHttpClient();
 
@@ -82,14 +77,28 @@ class CreateTasksAuvoJob implements ShouldQueue
 
             if (in_array($dayOfWeek, $oficina['diasSemana'])) {
                 $taskDate = $this->getDateTimeForDay($currentDate, $oficina['horaInicio']);
-                $existingTask = Task::where('auvo_id_task', $this->customerId)->first();
+                $existingTask = Task::where('auvo_id_task', $this->customer->id)->first();
 
                 if ($existingTask) {
-                    Log::info("Task for customer {$this->customerId} already exists with ID {$existingTask->auvo_id_task}.");
+                    Log::info("Task for customer {$this->customer->id} already exists with ID {$existingTask->auvo_id_task}.");
                     continue;
                 }
 
                 $taskData = $this->buildTaskData($colaborador['id'], $taskDate, $oficina['endereco'], $validTaskType, $validQuestionnaireId);
+
+                // Gerar o PDF
+                $pdfPath = $this->generatePdf($this->customer);
+
+                // Codificar o PDF em base64
+                $pdfBase64 = base64_encode(file_get_contents($pdfPath));
+
+                // Adicionar o PDF aos dados da tarefa
+                $taskData['attachments'] = [
+                    [
+                        'name' => 'ordem_resumo_' . $this->customer->id . '.pdf',
+                        'file' => $pdfBase64,
+                    ],
+                ];
 
                 $this->sendTaskData($client, $taskData, $taskDate);
             }
@@ -104,10 +113,10 @@ class CreateTasksAuvoJob implements ShouldQueue
             'idUserTo' => $colaboradorId,
             'taskDate' => $taskDate,
             'address' => $address,
-            'orientation' => $this->orientation,
+            'orientation' => $this->customer->orientation,
             'priority' => 3,
             'questionnaireId' => $questionnaireId,
-            'customerExternalId' => "{$this->customerId}",
+            'customerExternalId' => "{$this->customer->id}",
             'checkinType' => 1
         ];
     }
@@ -121,13 +130,13 @@ class CreateTasksAuvoJob implements ShouldQueue
             Log::info("API response status: {$response->status()}");
 
             if (in_array($response->status(), [200, 201])) {
-                Log::info("Task created for customer {$this->customerId} on date: {$taskDate}");
+                Log::info("Task created for customer {$this->customer->id} on date: {$taskDate}");
                 $this->processSuccessfulResponse($response);
             } else {
-                Log::error("Error creating task for customer {$this->customerId} on date: {$taskDate}: {$response->body()}");
+                Log::error("Error creating task for customer {$this->customer->id} on date: {$taskDate}: {$response->body()}");
             }
         } catch (\Exception $e) {
-            Log::error("Exception creating task for customer {$this->customerId} on date: {$taskDate}: " . $e->getMessage());
+            Log::error("Exception creating task for customer {$this->customer->id} on date: {$taskDate}: " . $e->getMessage());
         }
     }
 
@@ -177,5 +186,82 @@ class CreateTasksAuvoJob implements ShouldQueue
             }
         }
         return false;
+    }
+
+    private function generatePdf($customer): string
+    {
+        $dompdf = new Dompdf();
+        $orderItems = json_decode($customer->order_items, true);
+        $orderSummary = json_decode($customer->order_summary, true);
+
+        $html = '
+        <h3>Resumo do pedido: ' . $customer->id_order . '</h3>
+        <h3>' . $customer->orientation . '</h3>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>Quantidade</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Desconto</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+        foreach ($orderItems as $item) {
+            $html .= '
+                <tr>
+                    <td>' . $item['quantidade'] . '</td>
+                    <td>' . $item['descricao'] . '</td>
+                    <td>R$ ' . $item['valor'] . '</td>
+                    <td>R$ ' . $item['desconto'] . '</td>
+                </tr>';
+        }
+
+        $html .= '
+            </tbody>
+        </table>
+        <br><br>
+        <h3>Valores a cobrar</h3>
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td>Subtotal</td>
+                <td>R$ ' . $orderSummary['subtotal'] . '</td>
+            </tr>
+            <tr>
+                <td>Valor da Mão de Obra</td>
+                <td>R$ ' . $orderSummary['valor_maoobra'] . '</td>
+            </tr>
+            <tr>
+                <td>Desconto da Oficina</td>
+                <td style="color: red;">R$ -' . $orderSummary['valor_desconto'] . '</td>
+            </tr>
+            <tr>
+                <td>Desconto dos Itens</td>
+                <td style="color: red;">R$ -' . $orderSummary['valor_desconto_itens'] . '</td>
+            </tr>
+            <tr>
+                <td>Desconto na Negociação</td>
+                <td style="color: red;">R$ -' . $orderSummary['valor_desconto_negociacao'] . '</td>
+            </tr>
+            <tr>
+                <td>Ajuda Participativa</td>
+                <td style="color: red;">R$ -' . $orderSummary['ajuda_participativa'] . '</td>
+            </tr>
+            <tr>
+                <td><strong>Valor Total</strong></td>
+                <td><strong>R$ ' . $orderSummary['valor_total'] . '</strong></td>
+            </tr>
+        </table>';
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $output = $dompdf->output();
+        $pdfPath = storage_path('app/public/order_' . $customer->id . '.pdf');
+        file_put_contents($pdfPath, $output);
+
+        return $pdfPath;
     }
 }
