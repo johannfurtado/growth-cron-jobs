@@ -42,7 +42,7 @@ class ProcessColaboradorTasksJob implements ShouldQueue
 
                 $taskData = $this->buildTaskData($this->colaborador['id'], $taskDate, $this->oficina['endereco'], 153103, 173499, $taskCount);
 
-                dispatch(new GeneratePdfAuvoJob($this->customer, $taskData));
+                dispatch(new GeneratePdfAuvoJob($this->customer, $taskData, $this->accessToken));
 
                 $taskCount++;
             }

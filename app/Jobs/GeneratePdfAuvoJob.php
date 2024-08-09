@@ -15,7 +15,8 @@ class GeneratePdfAuvoJob implements ShouldQueue
 
     public function __construct(
         protected $customer,
-        protected array $taskData
+        protected array $taskData,
+        protected string $accessToken
     ) {
     }
 
@@ -31,7 +32,7 @@ class GeneratePdfAuvoJob implements ShouldQueue
             ],
         ];
 
-        dispatch(new SendTaskDataAuvoJob($this->taskData, $this->customer, $pdfPath));
+        dispatch(new SendTaskDataAuvoJob($this->taskData, $this->customer, $pdfPath, $this->accessToken));
     }
 
     private function generatePdf($customer): string

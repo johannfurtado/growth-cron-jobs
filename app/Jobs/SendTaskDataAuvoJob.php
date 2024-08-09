@@ -18,7 +18,8 @@ class SendTaskDataAuvoJob implements ShouldQueue
     public function __construct(
         protected array $taskData,
         protected $customer,
-        protected string $pdfPath
+        protected string $pdfPath,
+        protected string $accessToken
     ) {
     }
 
@@ -47,7 +48,7 @@ class SendTaskDataAuvoJob implements ShouldQueue
     {
         return Http::baseUrl(env('AUVO_API_URL'))
             ->withHeaders([
-                'Authorization' => 'Bearer ' . env('AUVO_API_TOKEN'),
+                'Authorization' => 'Bearer ' . $this->accessToken,
                 'Content-Type' => 'application/json',
             ])
             ->timeout(30)
