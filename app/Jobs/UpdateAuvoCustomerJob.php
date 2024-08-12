@@ -59,8 +59,11 @@ class UpdateAuvoCustomerJob implements ShouldQueue
                 Log::error("Error updating customer {$this->customer->id}:  {$response->body()}");
             }
 
+            $responseId = $response->json()['result']['id'];
+            Log::info($responseId);
+
             $idOficina = $this->customer->id_oficina ?? 0;
-            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken));
+            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

@@ -41,7 +41,7 @@ class AuvoService
                     return $e->getMessage();
                 }
             },
-        ], 10000);
+        ], 20000);
     }
 
     public function updateCustomers(array $customers, ?string $prefixExternalId = null): void
