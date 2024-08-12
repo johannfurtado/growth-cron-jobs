@@ -18,7 +18,8 @@ class ProcessColaboradorTasksJob implements ShouldQueue
         protected $colaborador,
         protected $customer,
         protected array $oficina,
-        protected string $accessToken
+        protected string $accessToken,
+        protected int $responseId
     ) {
     }
 
@@ -65,6 +66,7 @@ class ProcessColaboradorTasksJob implements ShouldQueue
             'priority' => 3,
             'questionnaireId' => $questionnaireId,
             'customerExternalId' => $externalId,
+            'customerId' => $this->responseId,
             'checkinType' => 1
         ];
     }

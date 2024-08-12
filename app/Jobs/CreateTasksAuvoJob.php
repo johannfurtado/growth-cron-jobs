@@ -19,6 +19,7 @@ class CreateTasksAuvoJob implements ShouldQueue
         protected $customer,
         protected int $idOficina,
         protected string $accessToken,
+        protected int $responseId
     ) {
     }
 
@@ -43,7 +44,7 @@ class CreateTasksAuvoJob implements ShouldQueue
                 continue;
             }
 
-            dispatch(new ProcessColaboradorTasksJob($colaborador, $this->customer, $oficina, $this->accessToken));
+            dispatch(new ProcessColaboradorTasksJob($colaborador, $this->customer, $oficina, $this->accessToken, $this->responseId));
         }
     }
 
