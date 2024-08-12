@@ -2,15 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Helpers\FormatHelper;
 use App\Helpers\ValidationHelper;
-use App\Services\Auvo\AuvoService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 class UpdateAuvoCustomerJob implements ShouldQueue
@@ -23,7 +22,8 @@ class UpdateAuvoCustomerJob implements ShouldQueue
     public function __construct(
         protected readonly string $accessToken,
         protected $customer,
-        protected readonly ?string $prefixExternalId
+        protected readonly ?string $prefixExternalId,
+        protected Collection $colaboradores // Alterado para Collection
     ) {
     }
 
@@ -32,7 +32,6 @@ class UpdateAuvoCustomerJob implements ShouldQueue
      */
     public function handle(PendingRequest $client): void
     {
-
         $client = $client->baseUrl(env('AUVO_API_URL'))
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->accessToken,
@@ -40,7 +39,6 @@ class UpdateAuvoCustomerJob implements ShouldQueue
             ]);
 
         try {
-
             $response = $client->put(
                 'customers',
                 [
@@ -54,17 +52,20 @@ class UpdateAuvoCustomerJob implements ShouldQueue
                     // "cpfCnpj" => $this->getCustomerCpfCnpj(),
                     // "email" => $this->getCustomerEmail(),
                     // "phoneNumber" => $this->getCustomerPhoneNumber(),
-
                 ]
             );
 
             if (!in_array($response->status(), [200, 201])) {
                 Log::error("Error updating customer {$this->customer->id}:  {$response->body()}");
             }
+
+            $idOficina = $this->customer->id_oficina ?? 0;
+            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
     }
+
 
     private function getCustomerCpfCnpj(): ?string
     {
