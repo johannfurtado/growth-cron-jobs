@@ -126,7 +126,6 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
-        AND par.id = 55368
 GROUP BY tipe.id_participant;
         ");
     }
@@ -244,7 +243,6 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
-        AND par.id = 55368
 GROUP BY tipe.id_participant;
         ");
     }
