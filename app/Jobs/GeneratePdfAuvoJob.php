@@ -42,64 +42,126 @@ class GeneratePdfAuvoJob implements ShouldQueue
         $orderSummary = json_decode($customer->order_summary, true);
 
         $html = '
-        <h3>Resumo do pedido: ' . $customer->id_order . '</h3>
-        <h3>' . $customer->orientation . '</h3>
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th>Quantidade</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <th>Desconto</th>
-                </tr>
-            </thead>
-            <tbody>';
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            font-size: 12px;
+        }
+        h3 {
+            text-align: center;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            padding: 8px;
+            text-align: center;
+            font-size: 10px;
+        }
+        td {
+            padding: 8px;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .highlight {
+            color: red;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 12px;
+        }
+    </style>
+    <h3>Resumo do pedido: ' . $customer->id_order . '</h3>
+    <h3>' . $customer->orientation . '</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Qtd.</th>
+                <th>Troca</th>
+                <th>Lanternagem</th>
+                <th>Pintura</th>
+                <th>Observação</th>
+                <th>Valor</th>
+                <th>Desconto</th>                               
+            </tr>
+        </thead>
+        <tbody>';
 
         foreach ($orderItems as $item) {
+            $quantidade = !empty($item['quantidade']) ? $item['quantidade'] : '0';
+            $descricao = !empty($item['descricao']) ? $item['descricao'] : '0';
+            $valor = !empty($item['valor']) ? 'R$ ' . $item['valor'] : 'R$ 0';
+            $desconto = !empty($item['desconto']) ? 'R$ ' . $item['desconto'] : 'R$ 0';
+            $observacao = !empty($item['observacao']) ? $item['observacao'] : '0';
+            $troca = isset($item['troca']) ? ($item['troca'] ? 'Sim' : 'Não') : 'Não';
+            $lanternagem = isset($item['lanternagem']) ? ($item['lanternagem'] ? 'Sim' : 'Não') : 'Não';
+            $pintura = isset($item['pintura']) ? ($item['pintura'] ? 'Sim' : 'Não') : 'Não';
+
             $html .= '
                 <tr>
-                    <td>' . $item['quantidade'] . '</td>
-                    <td>' . $item['descricao'] . '</td>
-                    <td>R$ ' . $item['valor'] . '</td>
-                    <td>R$ ' . $item['desconto'] . '</td>
+                    <td>' . $descricao . '</td>
+                    <td>' . $quantidade . '</td>
+                    <td>' . $troca . '</td>
+                    <td>' . $lanternagem . '</td>
+                    <td>' . $pintura . '</td>
+                    <td>' . $observacao . '</td>
+                    <td>' . $valor . '</td>
+                    <td>' . $desconto . '</td>                    
                 </tr>';
         }
 
+        // Verificar valores no orderSummary
+        $subtotal = !empty($orderSummary['subtotal']) ? 'R$ ' . $orderSummary['subtotal'] : 'R$ 0';
+        $valorMaoObra = !empty($orderSummary['valor_maoobra']) ? 'R$ ' . $orderSummary['valor_maoobra'] : 'R$ 0';
+        $valorDesconto = !empty($orderSummary['valor_desconto']) ? 'R$ -' . $orderSummary['valor_desconto'] : 'R$ 0';
+        $valorDescontoItens = !empty($orderSummary['valor_desconto_itens']) ? 'R$ -' . $orderSummary['valor_desconto_itens'] : 'R$ 0';
+        $valorDescontoNegociacao = !empty($orderSummary['valor_desconto_negociacao']) ? 'R$ -' . $orderSummary['valor_desconto_negociacao'] : 'R$ 0';
+        $ajudaParticipativa = !empty($orderSummary['ajuda_participativa']) ? 'R$ -' . $orderSummary['ajuda_participativa'] : 'R$ 0';
+        $valorTotal = !empty($orderSummary['valor_total']) ? 'R$ ' . $orderSummary['valor_total'] : 'R$ 0';
+
         $html .= '
-            </tbody>
-        </table>
-        <br><br>
-        <h3>Valores a cobrar</h3>
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td>Subtotal</td>
-                <td>R$ ' . $orderSummary['subtotal'] . '</td>
-            </tr>
-            <tr>
-                <td>Valor da Mão de Obra</td>
-                <td>R$ ' . $orderSummary['valor_maoobra'] . '</td>
-            </tr>
-            <tr>
-                <td>Desconto da Oficina</td>
-                <td style="color: red;">R$ -' . $orderSummary['valor_desconto'] . '</td>
-            </tr>
-            <tr>
-                <td>Desconto dos Itens</td>
-                <td style="color: red;">R$ -' . $orderSummary['valor_desconto_itens'] . '</td>
-            </tr>
-            <tr>
-                <td>Desconto na Negociação</td>
-                <td style="color: red;">R$ -' . $orderSummary['valor_desconto_negociacao'] . '</td>
-            </tr>
-            <tr>
-                <td>Ajuda Participativa</td>
-                <td style="color: red;">R$ -' . $orderSummary['ajuda_participativa'] . '</td>
-            </tr>
-            <tr>
-                <td><strong>Valor Total</strong></td>
-                <td><strong>R$ ' . $orderSummary['valor_total'] . '</strong></td>
-            </tr>
-        </table>';
+        </tbody>
+    </table>
+    <h3>Valores a cobrar</h3>
+    <table>
+        <tr>
+            <td>Subtotal</td>
+            <td>' . $subtotal . '</td>
+        </tr>
+        <tr>
+            <td>Valor da Mão de Obra</td>
+            <td>' . $valorMaoObra . '</td>
+        </tr>
+        <tr>
+            <td>Desconto da Oficina</td>
+            <td class="highlight">' . $valorDesconto . '</td>
+        </tr>
+        <tr>
+            <td>Desconto dos Itens</td>
+            <td class="highlight">' . $valorDescontoItens . '</td>
+        </tr>
+        <tr>
+            <td>Desconto na Negociação</td>
+            <td class="highlight">' . $valorDescontoNegociacao . '</td>
+        </tr>
+        <tr>
+            <td>Ajuda Participativa</td>
+            <td class="highlight">' . $ajudaParticipativa . '</td>
+        </tr>
+        <tr>
+            <td class="total">Valor Total</td>
+            <td class="total">' . $valorTotal . '</td>
+        </tr>
+    </table>';
 
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');

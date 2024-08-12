@@ -68,7 +68,11 @@ class IlevaAccidentInvolved extends Model
                 'quantidade', oi.quantidade,
                 'descricao', oi.descricao,
                 'valor', oi.valor,
-                'desconto', oi.desconto
+                'desconto', oi.desconto,
+                'observacao', oi.observacao,
+                'troca', oi.troca,
+                'lanternagem', oi.lanternagemn,
+                'pintura', oi.pintura
             )
         )
         FROM hbrd_adm_sinister_order_item oi
@@ -122,7 +126,7 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
-        AND par.id = 50787
+        AND par.id = 55368
 GROUP BY tipe.id_participant;
         ");
     }
@@ -182,7 +186,11 @@ GROUP BY tipe.id_participant;
                 'quantidade', oi.quantidade,
                 'descricao', oi.descricao,
                 'valor', oi.valor,
-                'desconto', oi.desconto
+                'desconto', oi.desconto,
+                'observacao', oi.observacao,
+                'troca', oi.troca,
+                'lanternagem', oi.lanternagemn,
+                'pintura', oi.pintura
             )
         )
         FROM hbrd_adm_sinister_order_item oi
@@ -236,7 +244,7 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
-        AND par.id = 50787
+        AND par.id = 55368
 GROUP BY tipe.id_participant;
         ");
     }
