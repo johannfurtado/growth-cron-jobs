@@ -19,9 +19,10 @@ class ProcessColaboradorTasksJob implements ShouldQueue
         protected $customer,
         protected array $oficina,
         protected string $accessToken,
-        protected int $responseId
-    ) {
-    }
+        protected int $responseId,
+        protected float $latitude,
+        protected float $longitude
+    ) {}
 
     public function handle(): void
     {
@@ -67,6 +68,8 @@ class ProcessColaboradorTasksJob implements ShouldQueue
             'questionnaireId' => $questionnaireId,
             'customerExternalId' => $externalId,
             'customerId' => $this->responseId,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
             'checkinType' => 1
         ];
     }
