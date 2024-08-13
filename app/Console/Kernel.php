@@ -14,8 +14,8 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('auvo-customer-update');
-        $schedule->command('field-control-customer-update');
+        $schedule->command('auvo-customer-update')->dailyAt('07:00')->timezone('America/Sao_Paulo');
+        $schedule->command('field-control-customer-update')->everyThirtyMinutes();
         $schedule->command('count-data')->everyTenSeconds();
     }
 
