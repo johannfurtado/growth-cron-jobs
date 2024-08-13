@@ -24,8 +24,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
         protected $customer,
         protected readonly ?string $prefixExternalId,
         protected Collection $colaboradores // Alterado para Collection
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -60,10 +59,16 @@ class UpdateAuvoCustomerJob implements ShouldQueue
             }
 
             $responseId = $response->json()['result']['id'];
+            $latitude = ($response->json()['result']['latitude'] ?? -23.558418) ?: -23.558418;
+            $longitude = ($response->json()['result']['longitude'] ?? -46.688081) ?: -46.688081;
+
             Log::info($responseId);
+            Log::info($latitude);
+            Log::info($longitude);
+
 
             $idOficina = $this->customer->id_oficina ?? 0;
-            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId));
+            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
