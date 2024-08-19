@@ -20,10 +20,12 @@ class Kernel extends ConsoleKernel
             ->timezone('America/Sao_Paulo');
 
         $schedule->command('field-control-customer-update')
-            ->everyThirtyMinutes();
+            ->everyThirtyMinutes()
+            ->timezone('America/Sao_Paulo');
 
         $schedule->command('count-data')
-            ->everyMinute();
+            ->everyMinute()
+            ->timezone('America/Sao_Paulo');
     }
 
     protected function commands()
