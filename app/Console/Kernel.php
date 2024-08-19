@@ -10,6 +10,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\AuvoCustomerUpdateCommand::class,
         \App\Console\Commands\FieldControlCustomerUpdateCommand::class,
+        \App\Console\Commands\CountData::class,
     ];
 
     protected function schedule(Schedule $schedule)
