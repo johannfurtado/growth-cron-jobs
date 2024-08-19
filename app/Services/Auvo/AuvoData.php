@@ -560,6 +560,14 @@ class AuvoData
                         'diasSemana' => ['Monday', 'Wednesday']
                     ],
                     [
+                        'id' => 1855,
+                        'cnpj' => '30.204.767/0001-01',
+                        'nome' => '3P LANTERNAGEM E PINTURA / GOIANIA GO',
+                        'endereco' => 'AVENIDA TOMAZ ANTONIO GONZAGA QD.22 LT ,15/16 CAPUAVA',
+                        'horaInicio' => '14:00',
+                        'diasSemana' => ['Monday', 'Wednesday']
+                    ],
+                    [
                         'id' => 2267,
                         'cnpj' => '05.921.345/0001-00',
                         'nome' => 'ROYALE AUTO PINTURA / GOIANIA GO',
@@ -591,6 +599,14 @@ class AuvoData
                 'ids_oficina' => [
                     [
                         'id' => 4201,
+                        'cnpj' => '11.845.788/0001-53',
+                        'nome' => 'OFICINA E LOCADORA SÃO FRANCISCO - ILHEUS BA',
+                        'endereco' => 'TRAVESSA DOS PALMARES, N° 169 - MALHADO',
+                        'horaInicio' => '09:00',
+                        'diasSemana' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+                    ],
+                    [
+                        'id' => 3194,
                         'cnpj' => '11.845.788/0001-53',
                         'nome' => 'OFICINA E LOCADORA SÃO FRANCISCO - ILHEUS BA',
                         'endereco' => 'TRAVESSA DOS PALMARES, N° 169 - MALHADO',
