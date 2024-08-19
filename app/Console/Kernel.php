@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
             ->everyThirtyMinutes();
 
         $schedule->command('count-data')
-            ->everyTenSeconds();
+            ->everyMinute();
     }
 
     protected function commands()
