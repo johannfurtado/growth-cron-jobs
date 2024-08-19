@@ -2,7 +2,6 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -12,21 +11,6 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\FieldControlCustomerUpdateCommand::class,
         \App\Console\Commands\CountData::class,
     ];
-
-    protected function schedule(Schedule $schedule)
-    {
-        $schedule->command('auvo-customer-update')
-            ->dailyAt('07:00')
-            ->timezone('America/Sao_Paulo');
-
-        $schedule->command('field-control-customer-update')
-            ->everyThirtyMinutes()
-            ->timezone('America/Sao_Paulo');
-
-        $schedule->command('count-data')
-            ->everyMinute()
-            ->timezone('America/Sao_Paulo');
-    }
 
     protected function commands()
     {
