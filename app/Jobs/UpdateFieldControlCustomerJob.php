@@ -20,8 +20,7 @@ class UpdateFieldControlCustomerJob implements ShouldQueue
      */
     public function __construct(
         protected $customer
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -83,8 +82,6 @@ class UpdateFieldControlCustomerJob implements ShouldQueue
                 if (!in_array($response->status(), [200, 201])) {
                     Log::error("Error updating customer {$this->customer->name}:  {$response->body()}");
                 }
-
-                // Log::info($response);
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
             }

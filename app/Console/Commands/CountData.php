@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CountData extends Command
 {
@@ -40,5 +41,12 @@ class CountData extends Command
         $totalData = $result[0]->total ?? 0;
 
         $this->info("Total: " . $totalData);
+        $this->logExecution();
+    }
+
+    protected function logExecution()
+    {
+        $timestamp = now()->toDateTimeString();
+        Log::channel('command_times')->info("Command 'count-data' was executed at {$timestamp}");
     }
 }

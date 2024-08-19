@@ -26,7 +26,6 @@ class CreateTasksAuvoJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info("Handling CreateTasksAuvoJob for customer: {$this->customer->id}");
 
         $oficina = $this->getOficinaById($this->idOficina);
         if (!$oficina) {
@@ -41,7 +40,7 @@ class CreateTasksAuvoJob implements ShouldQueue
             }
 
             if (!$this->isColaboradorResponsavelPelaOficina($colaborador, $this->idOficina)) {
-                Log::info("Colaborador {$colaborador['id']} não é responsável pela oficina {$this->idOficina}.");
+                // Log::info("Colaborador {$colaborador['id']} não é responsável pela oficina {$this->idOficina}.");
                 continue;
             }
 

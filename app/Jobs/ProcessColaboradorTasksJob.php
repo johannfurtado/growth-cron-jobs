@@ -38,7 +38,7 @@ class ProcessColaboradorTasksJob implements ShouldQueue
                 $existingTask = Task::where('auvo_id_task', $this->customer->id)->first();
 
                 if ($existingTask) {
-                    Log::info("Task for customer {$this->customer->id} already exists with ID {$existingTask->auvo_id_task}.");
+                    // Log::info("Task for customer {$this->customer->id} already exists with ID {$existingTask->auvo_id_task}.");
                     continue;
                 }
 

@@ -18,5 +18,12 @@ class AuvoCustomerUpdateCommand extends Command
         $auvoService->updateCustomers($motoclubCustomers, 'mc');
 
         $this->info('Auvo customers updated successfully.');
+        $this->logExecution();
+    }
+
+    protected function logExecution()
+    {
+        $timestamp = now()->toDateTimeString();
+        $this->info("Command 'auvo-customer-update' was executed at {$timestamp}");
     }
 }

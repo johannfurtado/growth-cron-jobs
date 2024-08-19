@@ -20,5 +20,12 @@ class FieldControlCustomerUpdateCommand extends Command
         }
 
         $this->info('Field Control customers update jobs dispatched successfully.');
+        $this->logExecution();
+    }
+
+    protected function logExecution()
+    {
+        $timestamp = now()->toDateTimeString();
+        $this->info("Command 'field-control-customer-update' was executed at {$timestamp}");
     }
 }

@@ -20,21 +20,16 @@ class SendTaskDataAuvoJob implements ShouldQueue
         protected $customer,
         protected string $pdfPath,
         protected string $accessToken
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
         $client = $this->configureHttpClient();
 
-        Log::info("Sending task data: " . json_encode($this->taskData));
-
         try {
             $response = $client->put('tasks', $this->taskData);
-            Log::info("API response status: {$response->status()}");
 
             if (in_array($response->status(), [200, 201])) {
-                Log::info("Task created for customer {$this->customer->id}");
                 $this->processSuccessfulResponse($response);
             } else {
                 Log::error("Error creating task for customer {$this->customer->id}: {$response->body()}");
@@ -59,7 +54,7 @@ class SendTaskDataAuvoJob implements ShouldQueue
     {
         $responseData = $response->json();
         if (isset($responseData['result']['taskID'])) {
-            Log::info("Task ID: {$responseData['result']['taskID']}");
+            // Log::info("Task ID: {$responseData['result']['taskID']}");
             Task::create([
                 'auvo_id_task' => $responseData['result']['taskID'],
             ]);
