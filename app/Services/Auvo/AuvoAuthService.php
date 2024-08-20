@@ -11,13 +11,16 @@ class AuvoAuthService
     private array $authencationData;
     public function __construct()
     {
-        $this->client = Http::baseUrl(env('AUVO_API_URL'))
+        $baseUrl = env('AUVO_API_URL', 'https://api.auvo.com.br/v2');
+
+        $this->client = Http::baseUrl($baseUrl)
             ->withHeaders([
                 "Content-Type" => "application/json",
             ]);
 
         $this->authencationData = $this->authenticate();
     }
+
 
     public function getAccessToken(): string
     {
@@ -28,8 +31,8 @@ class AuvoAuthService
     {
         try {
             $response = $this->client->get('login', [
-                'apiKey' => env('AUVO_API_KEY'),
-                'apiToken' => env('AUVO_API_TOKEN'),
+                'apiKey' => env('AUVO_API_KEY', 'W4B7ASF3EjRpFcTLiNGRpcq0XWTxMBC'),
+                'apiToken' => env('AUVO_API_TOKEN', 'W4B7ASF3EgMVc0hmBrLTbkAATOhEPGc'),
             ]);
 
             return $response->json()['result'];
