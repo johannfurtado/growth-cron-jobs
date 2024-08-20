@@ -19,7 +19,7 @@ class AuvoService
     {
         $this->accessToken = (new AuvoAuthService())->getAccessToken();
 
-        $this->authenticatedClient = Http::baseUrl(env('AUVO_API_URL'))
+        $this->authenticatedClient = Http::baseUrl(env('AUVO_API_URL', 'https://api.auvo.com.br/v2'))
             ->withHeaders($this->getHeaders());
     }
 
