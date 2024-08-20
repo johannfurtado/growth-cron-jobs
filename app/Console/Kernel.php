@@ -7,8 +7,8 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        \App\Console\Commands\AuvoCustomerUpdateCommand::class,
-        \App\Console\Commands\FieldControlCustomerUpdateCommand::class,
+        \App\Console\Commands\HandleAuvoUpdatesForExpertiseAccountCommand::class,
+        \App\Console\Commands\HandleAuvoUpdatesForInspectionAccountCommand::class,
         \App\Console\Commands\CountData::class,
     ];
 
