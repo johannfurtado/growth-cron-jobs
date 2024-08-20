@@ -22,9 +22,8 @@ class UpdateAuvoCustomerJob implements ShouldQueue
      */
     public function __construct(
         protected readonly string $accessToken,
-        protected $customer,
-        protected readonly AuvoCustomerDTO $customerDTO,
-        protected ?Collection $colaboradores = null
+        protected readonly AuvoCustomerDTO $auvoCustomerDTO,
+        protected ?Collection $tasksData = null
     ) {}
 
     /**
@@ -42,21 +41,21 @@ class UpdateAuvoCustomerJob implements ShouldQueue
             $response = $client->put(
                 'customers',
                 [
-                    $this->customerDTO->toArray(),
+                    $this->auvoCustomerDTO->toArray(),
                 ]
             );
 
             if (!in_array($response->status(), [200, 201])) {
-                Log::error("Error updating customer {$this->customer->id}:  {$response->body()}");
+                Log::error("Error updating customer {$this->auvoCustomerDTO->externalId}:  {$response->body()}");
             }
 
-            if ($this->colaboradores) {
+            if ($this->tasksData) {
                 $responseId = $response->json()['result']['id'];
                 $latitude = ($response->json()['result']['latitude'] ?? -23.558418) ?: -23.558418;
                 $longitude = ($response->json()['result']['longitude'] ?? -46.688081) ?: -46.688081;
 
-                $idOficina = $this->customer->id_oficina ?? 0;
-                dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
+                $idOficina = $this->auvoCustomerDTO->workshopId ?? 0;
+                dispatch(new CreateTasksAuvoJob($this->tasksData, $this->auvoCustomerDTO, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -66,16 +65,11 @@ class UpdateAuvoCustomerJob implements ShouldQueue
 
     private function getCustomerCpfCnpj(): ?string
     {
-        return ValidationHelper::cpfCnpj($this->customer->cpfCnpj) ? $this->customer->cpfCnpj : null;
+        return ValidationHelper::cpfCnpj($this->auvoCustomerDTO->cpfCnpj) ? $this->auvoCustomerDTO->cpfCnpj : null;
     }
 
     private function getCustomerEmail(): ?array
     {
-        return $this->customer->email ? ['email' => $this->customer->email] : null;
-    }
-
-    private function getCustomerPhoneNumber(): ?array
-    {
-        return $this->customer->phone ? ['phoneNumber' => $this->customer->phone] : null;
+        return $this->auvoCustomerDTO->email ? ['email' => $this->auvoCustomerDTO->email] : null;
     }
 }

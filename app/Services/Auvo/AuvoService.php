@@ -7,10 +7,9 @@ use App\Helpers\FormatHelper;
 use App\Jobs\UpdateAuvoCustomerJob;
 use App\Models\Ileva\IlevaAccidentInvolved;
 use App\Models\Ileva\IlevaAssociateVehicle;
-use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Facades\Http;
 use Laravel\Octane\Facades\Octane;
 use App\Services\Auvo\AuvoData;
+use Illuminate\Support\Collection;
 
 class AuvoService
 {
@@ -43,7 +42,7 @@ class AuvoService
                     return [];
                 }
             },
-        ], 20000);
+        ], 50000);
     }
 
     public function getIlevaDatabaseCustomersForExpertiseAuvoAccount(): array
@@ -51,15 +50,13 @@ class AuvoService
         return IlevaAssociateVehicle::getVehiclesForAuvo();
     }
 
-    public function updateCustomer(AuvoCustomerDTO $auvoCustomerDTO, ?string $prefixExternalId = null): void
+    public function updateCustomer(AuvoCustomerDTO $auvoCustomerDTO, ?Collection $tasksData = null): void
     {
-        $auvoData = new AuvoData();
 
         UpdateAuvoCustomerJob::dispatch(
             $this->accessToken,
             $auvoCustomerDTO,
-            $prefixExternalId,
-            $auvoData->getAuvoData()
+            $tasksData,
         );
     }
 

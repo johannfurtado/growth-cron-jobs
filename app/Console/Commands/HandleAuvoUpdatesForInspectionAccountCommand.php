@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\DTO\AuvoCustomerDTO;
 use App\Services\Auvo\AuvoAuthService;
+use App\Services\Auvo\AuvoData;
 use Illuminate\Console\Command;
 use App\Services\Auvo\AuvoService;
 use Laravel\Octane\Facades\Octane;
@@ -25,6 +26,8 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
         // $auvoService->updateCustomers($solidyCustomers);
         // $auvoService->updateCustomers($motoclubCustomers, 'mc');
 
+        $tasksData = (new AuvoData())->getAuvoData();
+
         foreach ($solidyCustomers as $customer) {
             $auvoService->updateCustomer(
                 new AuvoCustomerDTO(
@@ -35,7 +38,8 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
                     manager: $customer['manager'],
                     note: $customer['note'],
                     phoneNumber: $customer['phone_number'],
-                )
+                ),
+                $tasksData,
             );
         }
 
@@ -49,7 +53,8 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
                     manager: $customer['manager'],
                     note: $customer['note'],
                     phoneNumber: $customer['phone_number'],
-                )
+                ),
+                $tasksData,
             );
         }
 
@@ -63,7 +68,8 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
                     manager: $customer['manager'],
                     note: $customer['note'],
                     phoneNumber: $customer['phone_number'],
-                )
+                ),
+                $tasksData,
             );
         }
 

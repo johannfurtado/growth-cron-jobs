@@ -11,10 +11,12 @@ class AuvoCustomerDTO
         public readonly string $address,
         public readonly string $manager,
         public readonly string $note,
+        public readonly bool $active = true,
+        public readonly ?int $workshopId = null,
         public readonly ?string $cpfCnpj = null,
         public readonly ?string $email = null,
         public readonly ?string $phoneNumber = null,
-        public readonly bool $active = true,
+
     ) {}
 
     public function toArray(): array
