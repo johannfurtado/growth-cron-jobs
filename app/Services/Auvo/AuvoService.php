@@ -26,21 +26,21 @@ class AuvoService
                 try {
                     return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToSolidy('ileva_motoclub');
                 } catch (\Exception $e) {
-                    return $e->getMessage();
+                    return [];  // Retornar array vazio em caso de falha
                 }
             },
             function () {
                 try {
                     return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToMotoclub('ileva');
                 } catch (\Exception $e) {
-                    return $e->getMessage();
+                    return [];
                 }
             },
             function () {
                 try {
                     return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToNova('ileva_nova');
                 } catch (\Exception $e) {
-                    return $e->getMessage();
+                    return [];
                 }
             },
         ], 20000);
