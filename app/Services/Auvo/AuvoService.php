@@ -2,9 +2,11 @@
 
 namespace App\Services\Auvo;
 
+use App\DTO\AuvoCustomerDTO;
 use App\Helpers\FormatHelper;
 use App\Jobs\UpdateAuvoCustomerJob;
 use App\Models\Ileva\IlevaAccidentInvolved;
+use App\Models\Ileva\IlevaAssociateVehicle;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Laravel\Octane\Facades\Octane;
@@ -12,18 +14,11 @@ use App\Services\Auvo\AuvoData;
 
 class AuvoService
 {
-    private PendingRequest $authenticatedClient;
-    public string $accessToken;
+    public function __construct(
+        private readonly string $accessToken
+    ) {}
 
-    public function __construct()
-    {
-        $this->accessToken = (new AuvoAuthService())->getAccessToken();
-
-        $this->authenticatedClient = Http::baseUrl(env('AUVO_API_URL', 'https://api.auvo.com.br/v2'))
-            ->withHeaders($this->getHeaders());
-    }
-
-    public function getIlevaDatabaseCustomers(): array
+    public function getIlevaDatabaseCustomersForInspectionAuvoAccount(): array
     {
 
         return Octane::concurrently([
@@ -51,12 +46,21 @@ class AuvoService
         ], 20000);
     }
 
-    public function updateCustomers(array $customers, ?string $prefixExternalId = null): void
+    public function getIlevaDatabaseCustomersForExpertiseAuvoAccount(): array
+    {
+        return IlevaAssociateVehicle::getVehiclesForAuvo();
+    }
+
+    public function updateCustomer(AuvoCustomerDTO $auvoCustomerDTO, ?string $prefixExternalId = null): void
     {
         $auvoData = new AuvoData();
-        foreach ($customers as $customer) {
-            UpdateAuvoCustomerJob::dispatch($this->accessToken, $customer, $prefixExternalId, $auvoData->getAuvoData());
-        }
+
+        UpdateAuvoCustomerJob::dispatch(
+            $this->accessToken,
+            $auvoCustomerDTO,
+            $prefixExternalId,
+            $auvoData->getAuvoData()
+        );
     }
 
     private function getHeaders(): array

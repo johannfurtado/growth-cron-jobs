@@ -116,7 +116,7 @@ LEFT JOIN hbrd_main_util_city city ON city.id = par.id_cidade
 LEFT JOIN hbrd_main_util_state state ON state.id = par.id_estado
 WHERE status.id_status = 6
   AND par.status = 'Ativo'
-  AND tipe.id_tipo = '8'
+  AND tipe.id_tipo IN ('8', '14')
   AND COALESCE(
         (
             SELECT MIN(status_history.create_at)
@@ -233,7 +233,7 @@ LEFT JOIN hbrd_main_util_city city ON city.id = par.id_cidade
 LEFT JOIN hbrd_main_util_state state ON state.id = par.id_estado
 WHERE status.id_status = 6
   AND par.status = 'Ativo'
-  AND tipe.id_tipo = '8'
+  AND tipe.id_tipo IN ('8', '14')
   AND COALESCE(
         (
             SELECT MIN(status_history.create_at)
@@ -350,7 +350,7 @@ LEFT JOIN hbrd_main_util_city city ON city.id = par.id_cidade
 LEFT JOIN hbrd_main_util_state state ON state.id = par.id_estado
 WHERE status.id_status = 6
   AND par.status = 'Ativo'
-  AND tipe.id_tipo = '8'
+  AND tipe.id_tipo IN ('8', '14')
   AND COALESCE(
         (
             SELECT MIN(status_history.create_at)

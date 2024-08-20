@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\DTO\AuvoCustomerDTO;
 use App\Helpers\ValidationHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,16 +23,16 @@ class UpdateAuvoCustomerJob implements ShouldQueue
     public function __construct(
         protected readonly string $accessToken,
         protected $customer,
-        protected readonly ?string $prefixExternalId,
-        protected Collection $colaboradores // Alterado para Collection
+        protected readonly AuvoCustomerDTO $customerDTO,
+        protected ?Collection $colaboradores = null
     ) {}
 
     /**
      * Execute the job.
      */
-    public function handle(PendingRequest $client): void
+    public function handle(PendingRequest $rawClient): void
     {
-        $client = $client->baseUrl(env('AUVO_API_URL'))
+        $client = $rawClient->baseUrl(env('AUVO_API_URL'))
             ->withHeaders([
                 'Authorization' => 'Bearer ' . $this->accessToken,
                 'Content-Type' => 'application/json',
@@ -41,16 +42,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
             $response = $client->put(
                 'customers',
                 [
-                    'externalId' => (string) "{$this->prefixExternalId}{$this->customer->id}",
-                    'description' => $this->customer->name,
-                    'name' => "{$this->prefixExternalId}{$this->customer->name}",
-                    'address' => $this->customer->address,
-                    'manager' => 'thais santos',
-                    'note' => $this->customer->note,
-                    "active" => true,
-                    // "cpfCnpj" => $this->getCustomerCpfCnpj(),
-                    // "email" => $this->getCustomerEmail(),
-                    // "phoneNumber" => $this->getCustomerPhoneNumber(),
+                    $this->customerDTO->toArray(),
                 ]
             );
 
@@ -58,12 +50,14 @@ class UpdateAuvoCustomerJob implements ShouldQueue
                 Log::error("Error updating customer {$this->customer->id}:  {$response->body()}");
             }
 
-            $responseId = $response->json()['result']['id'];
-            $latitude = ($response->json()['result']['latitude'] ?? -23.558418) ?: -23.558418;
-            $longitude = ($response->json()['result']['longitude'] ?? -46.688081) ?: -46.688081;
+            if ($this->colaboradores) {
+                $responseId = $response->json()['result']['id'];
+                $latitude = ($response->json()['result']['latitude'] ?? -23.558418) ?: -23.558418;
+                $longitude = ($response->json()['result']['longitude'] ?? -46.688081) ?: -46.688081;
 
-            $idOficina = $this->customer->id_oficina ?? 0;
-            dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
+                $idOficina = $this->customer->id_oficina ?? 0;
+                dispatch(new CreateTasksAuvoJob($this->colaboradores, $this->customer, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
+            }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }

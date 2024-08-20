@@ -9,8 +9,10 @@ class AuvoAuthService
 {
     private PendingRequest $client;
     private array $authencationData;
-    public function __construct()
-    {
+    public function __construct(
+        private readonly string $apiKey,
+        private readonly string $apiToken,
+    ) {
         $baseUrl = env('AUVO_API_URL', 'https://api.auvo.com.br/v2');
 
         $this->client = Http::baseUrl($baseUrl)
@@ -31,8 +33,8 @@ class AuvoAuthService
     {
         try {
             $response = $this->client->get('login', [
-                'apiKey' => env('AUVO_API_KEY', 'W4B7ASF3EjRpFcTLiNGRpcq0XWTxMBC'),
-                'apiToken' => env('AUVO_API_TOKEN', 'W4B7ASF3EgMVc0hmBrLTbkAATOhEPGc'),
+                'apiKey' => $this->apiKey,
+                'apiToken' => $this->apiToken,
             ]);
 
             return $response->json()['result'];

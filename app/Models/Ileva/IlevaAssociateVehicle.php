@@ -38,7 +38,7 @@ class IlevaAssociateVehicle extends Model
         return $this->hasOne(IlevaAssociateVehicleColor::class, 'id', 'id_cor');
     }
 
-    public static function getVehiclesForFieldControl(): array
+    public static function getVehiclesForAuvo(): array
     {
         return DB::connection('ileva')
             ->select("
