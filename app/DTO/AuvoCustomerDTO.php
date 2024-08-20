@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-class AuvoCustomerDTO
+final class AuvoCustomerDTO
 {
     public function __construct(
         public readonly string $externalId,

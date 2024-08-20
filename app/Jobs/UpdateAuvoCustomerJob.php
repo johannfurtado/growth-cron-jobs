@@ -54,8 +54,16 @@ class UpdateAuvoCustomerJob implements ShouldQueue
                 $latitude = ($response->json()['result']['latitude'] ?? -23.558418) ?: -23.558418;
                 $longitude = ($response->json()['result']['longitude'] ?? -46.688081) ?: -46.688081;
 
-                $idOficina = $this->auvoCustomerDTO->workshopId ?? 0;
-                dispatch(new CreateTasksAuvoJob($this->tasksData, $this->auvoCustomerDTO, $idOficina, $this->accessToken, $responseId, $latitude, $longitude));
+                $workshopId = $this->auvoCustomerDTO->workshopId ?? 0;
+                dispatch(new CreateTasksAuvoJob(
+                    $this->tasksData,
+                    $this->auvoCustomerDTO,
+                    $workshopId,
+                    $this->accessToken,
+                    $responseId,
+                    $latitude,
+                    $longitude
+                ));
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());

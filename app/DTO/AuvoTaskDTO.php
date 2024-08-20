@@ -2,33 +2,6 @@
 
 namespace App\DTO;
 
-// "{
-//     \"externalId\": \"123\",
-//     \"taskType\": 1,
-//     \"idUserFrom\": 99,
-//     \"idUserTo\": 69,
-//     \"teamId\": 6,
-//     \"taskDate\": \"2016-04-23T18:00:00\",
-//     \"latitude\": -16.6872086111083,
-//     \"longitude\": -49.2995542287827,
-//     \"address\": \"avenue Y\",
-//     \"orientation\": \"Gotta Catch \'Em All\",
-//     \"priority\": 1,
-//     \"questionnaireId\": 3,
-//     \"customerId\": 1,
-//     \"checkinType\": 1,
-//     \"sendSatisfactionSurvey\": false,
-//     \"attachments\": [
-//         {
-//             \"name\": \"my_file.pdf\",
-//             \"file\": \"base64 encoded file\"
-//         }
-//     ],
-//     \"keyWords\": [
-//         1
-//     ]
-// }"
-
 final class AuvoTaskDTO
 {
     public function __construct(

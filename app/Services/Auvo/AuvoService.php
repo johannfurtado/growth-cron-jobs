@@ -52,12 +52,11 @@ class AuvoService
 
     public function updateCustomer(AuvoCustomerDTO $auvoCustomerDTO, ?Collection $tasksData = null): void
     {
-
-        UpdateAuvoCustomerJob::dispatch(
+        dispatch(new UpdateAuvoCustomerJob(
             $this->accessToken,
             $auvoCustomerDTO,
-            $tasksData,
-        );
+            $tasksData
+        ));
     }
 
     private function getHeaders(): array
