@@ -9,7 +9,7 @@ final class AuvoCustomerDTO
         public readonly string $description,
         public readonly string $name,
         public readonly string $address,
-        public readonly string $manager,
+        public readonly string $manager = 'thais santos',
         public readonly string $note,
         public readonly bool $active = true,
         public readonly ?int $workshopId = null,

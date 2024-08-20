@@ -5,23 +5,23 @@ namespace App\DTO;
 final class AuvoTaskDTO
 {
     public function __construct(
-        public readonly string $externalId,
-        public readonly int $taskType,
-        public readonly int $idUserFrom,
-        public readonly int $idUserTo,
-        public readonly int $teamId,
-        public readonly string $taskDate,
+        public readonly ?string $externalId = null,
+        public readonly ?int $taskType = null,
+        public readonly int $idUserFrom = 163489,
+        public readonly ?int $idUserTo = null,
+        public readonly ?int $teamId = null,
+        public readonly ?string $taskDate = null,
         public readonly float $latitude = -23.558418,
         public readonly float $longitude = -46.688081,
         public readonly string $address,
         public readonly string $orientation,
         public readonly int $priority,
-        public readonly int $questionnaireId,
-        public readonly int $customerId,
-        public readonly int $checkinType,
-        public readonly bool $sendSatisfactionSurvey,
-        public readonly array $attachments,
-        public readonly array $keyWords,
+        public readonly ?int $questionnaireId = null,
+        public readonly ?int $customerId = null,
+        public readonly ?int $checkinType = null,
+        public readonly ?bool $sendSatisfactionSurvey = null,
+        public readonly ?array $attachments = null,
+        public readonly ?array $keyWords = null,
     ) {}
 
     public function toArray(): array
