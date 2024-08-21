@@ -23,7 +23,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
     public function __construct(
         protected readonly string $accessToken,
         protected readonly AuvoCustomerDTO $auvoCustomerDTO,
-        protected ?Collection $tasksData = null
+        protected ?Collection $tasksData = null,
     ) {}
 
     /**

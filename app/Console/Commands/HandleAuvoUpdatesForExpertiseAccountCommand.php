@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\DTO\AuvoCustomerDTO;
+use App\Jobs\UpdateAuvoTaskJob;
 use App\Services\Auvo\AuvoAuthService;
 use Illuminate\Console\Command;
 use App\Services\Auvo\AuvoService;
@@ -25,7 +26,7 @@ class HandleAuvoUpdatesForExpertiseAccountCommand extends Command
 
         foreach ($solidyCustomers as $customer) {
             $auvoService->updateCustomer(
-                new AuvoCustomerDTO(
+                auvoCustomerDTO: new AuvoCustomerDTO(
                     externalId: $customer['external_id'],
                     description: $customer['description'],
                     name: $customer['name'],
@@ -33,7 +34,7 @@ class HandleAuvoUpdatesForExpertiseAccountCommand extends Command
                     manager: $customer['manager'],
                     note: $customer['note'],
                     phoneNumber: $customer['phone_number'],
-                )
+                ),
             );
         }
 

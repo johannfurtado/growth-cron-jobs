@@ -5,11 +5,13 @@ namespace App\Services\Auvo;
 use App\DTO\AuvoCustomerDTO;
 use App\Helpers\FormatHelper;
 use App\Jobs\UpdateAuvoCustomerJob;
+use App\Jobs\UpdateAuvoTaskJob;
 use App\Models\Ileva\IlevaAccidentInvolved;
 use App\Models\Ileva\IlevaAssociateVehicle;
 use Laravel\Octane\Facades\Octane;
-use App\Services\Auvo\AuvoData;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
 
 class AuvoService
 {
@@ -50,13 +52,25 @@ class AuvoService
         return IlevaAssociateVehicle::getVehiclesForAuvo();
     }
 
-    public function updateCustomer(AuvoCustomerDTO $auvoCustomerDTO, ?Collection $tasksData = null): void
-    {
+    public function updateCustomer(
+        AuvoCustomerDTO $auvoCustomerDTO,
+        ?Collection $tasksData = null,
+    ): void {
         dispatch(new UpdateAuvoCustomerJob(
             $this->accessToken,
             $auvoCustomerDTO,
-            $tasksData
+            $tasksData,
         ));
+    }
+
+    public function updateCustomerWithTasks(
+        UpdateAuvoCustomerJob $updateAuvoCustomerJob,
+        UpdateAuvoTaskJob $updateAuvoTaskJob,
+    ): void {
+        Bus::chain([
+            $updateAuvoCustomerJob,
+            $updateAuvoTaskJob,
+        ])->dispatch();
     }
 
     private function getHeaders(): array
