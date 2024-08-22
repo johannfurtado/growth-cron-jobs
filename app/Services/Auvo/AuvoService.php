@@ -49,7 +49,15 @@ class AuvoService
 
     public function getIlevaDatabaseCustomersForExpertiseAuvoAccount(): array
     {
-        return IlevaAssociateVehicle::getVehiclesForAuvo();
+        return Octane::concurrently([
+            function () {
+                try {
+                    return IlevaAccidentInvolved::getAccidentInvolvedForAuvoExpertiseInSolidy();
+                } catch (\Exception $e) {
+                    return [];
+                }
+            },
+        ], 50000);
     }
 
     public function updateCustomer(

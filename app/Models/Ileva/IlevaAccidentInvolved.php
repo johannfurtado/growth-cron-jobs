@@ -363,4 +363,88 @@ WHERE status.id_status = 6
 GROUP BY tipe.id_participant;
         ");
     }
+
+    public static function getAccidentInvolvedForAuvoExpertiseInSolidy(): array
+    {
+        return DB::connection('ileva')
+            ->select("
+SELECT DISTINCT
+par.id external_id,
+par.id note,
+CONCAT(par.nome, ' / ', par.placa) name,
+CASE
+WHEN par.associado = 1 THEN CONCAT('Associado: ', IFNULL(par.nome, ''), '/n', 'CPF: ', IFNULL(par.cpf_cnpj, ''), '/n', 'Placa: ', IFNULL(par.placa, ''), '/n', 'Montadora: ', IFNULL(par.montadora, ''), '/n', 'Modelo: ', IFNULL(par.modelo_veiculo, ''), '/n', 'Chassi: ', IFNULL(par.chassi, ''), '/n', 'Cor: ', IFNULL(par.cor, ''))
+ELSE (
+        SELECT CONCAT('Associado: ', IFNULL(par2.nome, ''), '/n', 'CPF: ', IFNULL(par2.cpf_cnpj, ''), '/n', 'Placa: ', IFNULL(par2.placa, ''), '/n', 'Montadora: ', IFNULL(par2.montadora, ''), '/n', 'Modelo: ', IFNULL(par2.modelo_veiculo, ''), '/n', 'Chassi: ', IFNULL(par2.chassi, ''), '/n', 'Cor: ', IFNULL(par2.cor, ''))
+        FROM hbrd_adm_sinister_participant par2
+        WHERE par2.associado = 1
+        AND par2.id_sinister = par.id_sinister
+        )
+END description
+
+FROM hbrd_adm_sinister_participant_status_history status
+LEFT JOIN hbrd_adm_sinister_participant_type_history tipe ON status.id_pai = tipe.id
+LEFT JOIN hbrd_adm_sinister_status s ON status.id_status = s.id
+LEFT JOIN hbrd_adm_sinister_participant par ON par.id = tipe.id_participant
+LEFT JOIN hbrd_adm_sinister_history sh ON sh.id_sinister = par.id_sinister
+LEFT JOIN hbrd_adm_sinister_order haso ON haso.id_participant = par.id
+LEFT JOIN hbrd_adm_sinister has ON has.id = par.id_sinister
+
+WHERE status.id_status = 17
+  AND par.status = 'Ativo'
+  AND COALESCE(
+        (
+            SELECT MIN(status_history.create_at)
+            FROM hbrd_adm_sinister_participant_status_history status_history
+            WHERE status_history.create_at > status.create_at
+              AND status.id_pai = status_history.id_pai
+        ),
+        status.leave_at
+    ) IS NULL
+
+GROUP BY tipe.id_participant;
+            ");
+    }
+
+    public static function getAccidentInvolvedForAuvoExpertiseInMotoclub(): array
+    {
+        return DB::connection('ileva_motoclub')
+            ->select("
+SELECT DISTINCT
+CONCAT('mc', par.id) external_id,
+CONCAT('mc', par.id) note,
+CONCAT(par.nome, ' / ', par.placa) name,
+CASE
+WHEN par.associado = 1 THEN CONCAT('Associado: ', IFNULL(par.nome, ''), '/n', 'CPF: ', IFNULL(par.cpf_cnpj, ''), '/n', 'Placa: ', IFNULL(par.placa, ''), '/n', 'Montadora: ', IFNULL(par.montadora, ''), '/n', 'Modelo: ', IFNULL(par.modelo_veiculo, ''), '/n', 'Chassi: ', IFNULL(par.chassi, ''), '/n', 'Cor: ', IFNULL(par.cor, ''))
+ELSE (
+        SELECT CONCAT('Associado: ', IFNULL(par2.nome, ''), '/n', 'CPF: ', IFNULL(par2.cpf_cnpj, ''), '/n', 'Placa: ', IFNULL(par2.placa, ''), '/n', 'Montadora: ', IFNULL(par2.montadora, ''), '/n', 'Modelo: ', IFNULL(par2.modelo_veiculo, ''), '/n', 'Chassi: ', IFNULL(par2.chassi, ''), '/n', 'Cor: ', IFNULL(par2.cor, ''))
+        FROM hbrd_adm_sinister_participant par2
+        WHERE par2.associado = 1
+        AND par2.id_sinister = par.id_sinister
+    )
+END description
+
+FROM hbrd_adm_sinister_participant_status_history status
+LEFT JOIN hbrd_adm_sinister_participant_type_history tipe ON status.id_pai = tipe.id
+LEFT JOIN hbrd_adm_sinister_status s ON status.id_status = s.id
+LEFT JOIN hbrd_adm_sinister_participant par ON par.id = tipe.id_participant
+LEFT JOIN hbrd_adm_sinister_history sh ON sh.id_sinister = par.id_sinister
+LEFT JOIN hbrd_adm_sinister_order haso ON haso.id_participant = par.id
+LEFT JOIN hbrd_adm_sinister has ON has.id = par.id_sinister
+
+WHERE status.id_status = 16
+  AND par.status = 'Ativo'
+  AND COALESCE(
+        (
+            SELECT MIN(status_history.create_at)
+            FROM hbrd_adm_sinister_participant_status_history status_history
+            WHERE status_history.create_at > status.create_at
+              AND status.id_pai = status_history.id_pai
+        ),
+        status.leave_at
+    ) IS NULL
+
+GROUP BY tipe.id_participant;
+    ");
+    }
 }

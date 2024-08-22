@@ -4,6 +4,10 @@ namespace App\DTO;
 
 final class AuvoTaskDTO
 {
+
+    const LATITUDE = -23.558418;
+    const LONGITUDE = -46.688081;
+
     public function __construct(
         public readonly ?string $externalId = null,
         public readonly ?int $taskType = null,
@@ -11,11 +15,9 @@ final class AuvoTaskDTO
         public readonly ?int $idUserTo = null,
         public readonly ?int $teamId = null,
         public readonly ?string $taskDate = null,
-        public readonly float $latitude = -23.558418,
-        public readonly float $longitude = -46.688081,
         public readonly string $address,
         public readonly string $orientation,
-        public readonly int $priority,
+        public readonly int $priority = 3,
         public readonly ?int $questionnaireId = null,
         public readonly ?int $customerId = null,
         public readonly ?int $checkinType = null,
@@ -33,8 +35,8 @@ final class AuvoTaskDTO
             'idUserTo' => $this->idUserTo,
             'teamId' => $this->teamId,
             'taskDate' => $this->taskDate,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
+            'latitude' => self::LATITUDE,
+            'longitude' => self::LONGITUDE,
             'address' => $this->address,
             'orientation' => $this->orientation,
             'priority' => $this->priority,
