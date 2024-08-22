@@ -9,14 +9,17 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use App\Models\Task;
+use App\DTO\AuvoCustomerDTO;
+use App\DTO\AuvoTaskDTO;
 
 class ProcessColaboradorTasksJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected AuvoTaskDTO $taskData;
     public function __construct(
         protected $colaborador,
-        protected $customer,
+        protected AuvoCustomerDTO $customer,
         protected array $oficina,
         protected string $accessToken,
         protected int $responseId,
@@ -35,43 +38,35 @@ class ProcessColaboradorTasksJob implements ShouldQueue
 
             if (in_array($dayOfWeek, $this->oficina['diasSemana'])) {
                 $taskDate = $this->getDateTimeForDay($currentDate, $this->oficina['horaInicio']);
-                $existingTask = Task::where('auvo_id_task', $this->customer->id)->first();
+                $existingTask = Task::where('auvo_id_task', $this->customer->externalId)->first();
 
                 if ($existingTask) {
                     // Log::info("Task for customer {$this->customer->id} already exists with ID {$existingTask->auvo_id_task}.");
                     continue;
                 }
 
-                $taskData = $this->buildTaskData($this->colaborador['id'], $taskDate, $this->oficina['endereco'], 153103, 173499, $taskCount);
+                $this->taskData = new AuvoTaskDTO(
+                    externalId: "{$this->customer->externalId}_{$taskCount}",
+                    taskType: 153103,
+                    idUserFrom: 163489,
+                    idUserTo: $this->colaborador['id'],
+                    taskDate: $taskDate,
+                    address: $this->customer->address,
+                    orientation: $this->customer->orientation,
+                    priority: 3,
+                    questionnaireId: 173499,
+                    customerId: $this->responseId,
+                    latitude: $this->latitude,
+                    longitude: $this->longitude,
+                    checkinType: 1
 
-                dispatch(new GeneratePdfAuvoJob($this->customer, $taskData, $this->accessToken));
+                );
+
+                dispatch(new GeneratePdfAuvoJob($this->customer, $this->taskData, $this->accessToken));
 
                 $taskCount++;
             }
         }
-    }
-
-    private function buildTaskData($colaboradorId, $taskDate, $address, $taskType, $questionnaireId, $taskCount)
-    {
-        // Gerar o externalId combinando customerId e contador
-        $externalId = "{$this->customer->id}_{$taskCount}";
-
-        return [
-            'externalId' => $externalId,
-            'taskType' => $taskType,
-            'idUserFrom' => 163489,
-            'idUserTo' => $colaboradorId,
-            'taskDate' => $taskDate,
-            'address' => $address,
-            'orientation' => $this->customer->orientation,
-            'priority' => 3,
-            'questionnaireId' => $questionnaireId,
-            'customerExternalId' => $externalId,
-            'customerId' => $this->responseId,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
-            'checkinType' => 1
-        ];
     }
 
     private function getDateTimeForDay(\DateTime $date, string $horaInicio): string

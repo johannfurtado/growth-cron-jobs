@@ -16,7 +16,9 @@ final class AuvoCustomerDTO
         public readonly ?string $cpfCnpj = null,
         public readonly ?string $email = null,
         public readonly ?string $phoneNumber = null,
-
+        public readonly ?string $orientation = null,
+        public readonly ?array $order_items = [],
+        public readonly ?array $order_summary = [],
     ) {}
 
     public function toArray(): array

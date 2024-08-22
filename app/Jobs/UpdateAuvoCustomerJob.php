@@ -40,9 +40,7 @@ class UpdateAuvoCustomerJob implements ShouldQueue
         try {
             $response = $client->put(
                 'customers',
-                [
-                    $this->auvoCustomerDTO->toArray(),
-                ]
+                $this->auvoCustomerDTO->toArray(),
             );
 
             if (!in_array($response->status(), [200, 201])) {

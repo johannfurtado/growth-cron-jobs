@@ -31,13 +31,13 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
         foreach ($solidyCustomers as $customer) {
             $auvoService->updateCustomer(
                 new AuvoCustomerDTO(
-                    externalId: $customer['external_id'],
-                    description: $customer['description'],
-                    name: $customer['name'],
-                    address: $customer['address'],
-                    manager: $customer['manager'],
-                    note: $customer['note'],
-                    phoneNumber: $customer['phone_number'],
+                    externalId: $customer->id,
+                    description: $customer->name,
+                    name: "{$customer->id}{$customer->name}",
+                    address: $customer->address,
+                    manager: 'thais santos',
+                    note: $customer->note,
+                    workshopId: $customer->id_oficina,
                 ),
                 $tasksData,
             );
@@ -46,13 +46,13 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
         foreach ($motoclubCustomers as $customer) {
             $auvoService->updateCustomer(
                 new AuvoCustomerDTO(
-                    externalId: $customer['external_id'],
-                    description: $customer['description'],
-                    name: $customer['name'],
-                    address: $customer['address'],
-                    manager: $customer['manager'],
-                    note: $customer['note'],
-                    phoneNumber: $customer['phone_number'],
+                    externalId: "mc{$customer->id}",
+                    description: $customer->name,
+                    name: "{$customer->id}{$customer->name}",
+                    address: $customer->address,
+                    manager: 'thais santos',
+                    note: $customer->note,
+                    workshopId: $customer->id_oficina,
                 ),
                 $tasksData,
             );
@@ -61,13 +61,13 @@ class HandleAuvoUpdatesForInspectionAccountCommand extends Command
         foreach ($novaCustomers as $customer) {
             $auvoService->updateCustomer(
                 new AuvoCustomerDTO(
-                    externalId: $customer['external_id'],
-                    description: $customer['description'],
-                    name: $customer['name'],
-                    address: $customer['address'],
-                    manager: $customer['manager'],
-                    note: $customer['note'],
-                    phoneNumber: $customer['phone_number'],
+                    externalId: "nv{$customer->id}",
+                    description: $customer->name,
+                    name: "{$customer->id}{$customer->name}",
+                    address: $customer->address,
+                    manager: 'thais santos',
+                    note: $customer->note,
+                    workshopId: $customer->id_oficina,
                 ),
                 $tasksData,
             );
