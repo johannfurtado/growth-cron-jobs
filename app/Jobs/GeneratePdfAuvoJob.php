@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\DTO\AuvoCustomerDTO;
+use App\DTO\AuvoTaskDTO;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,25 +16,23 @@ class GeneratePdfAuvoJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        protected $customer,
-        protected array $taskData,
+        protected AuvoCustomerDTO $customer,
+        protected AuvoTaskDTO $taskData,
         protected string $accessToken
-    ) {
-    }
+    ) {}
 
     public function handle(): void
     {
         $pdfPath = $this->generatePdf($this->customer);
 
         $pdfBase64 = base64_encode(file_get_contents($pdfPath));
-        $this->taskData['attachments'] = [
+        $this->taskData->attachments =
             [
-                'name' => 'ordem_resumo_' . $this->customer->id . '.pdf',
+                'name' => 'ordem_resumo_' . $this->customer->externalId . '.pdf',
                 'file' => $pdfBase64,
-            ],
-        ];
+            ];
 
-        dispatch(new SendTaskDataAuvoJob($this->taskData, $this->customer, $pdfPath, $this->accessToken));
+        dispatch(new UpdateAuvoTaskJob($this->accessToken, $this->taskData));
     }
 
     private function generatePdf($customer): string

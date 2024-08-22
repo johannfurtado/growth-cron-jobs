@@ -22,29 +22,11 @@ class AuvoService
     public function getIlevaDatabaseCustomersForInspectionAuvoAccount(): array
     {
 
-        return Octane::concurrently([
-            function () {
-                try {
-                    return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToSolidy('ileva_motoclub');
-                } catch (\Exception $e) {
-                    return [];  // Retornar array vazio em caso de falha
-                }
-            },
-            function () {
-                try {
-                    return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToMotoclub('ileva');
-                } catch (\Exception $e) {
-                    return [];
-                }
-            },
-            function () {
-                try {
-                    return IlevaAccidentInvolved::getAccidentInvolvedForAuvoToNova('ileva_nova');
-                } catch (\Exception $e) {
-                    return [];
-                }
-            },
-        ], 50000);
+        return [
+            IlevaAccidentInvolved::getAccidentInvolvedForAuvoToMotoclub('ileva'),
+            IlevaAccidentInvolved::getAccidentInvolvedForAuvoToSolidy('ileva_motoclub'),
+            IlevaAccidentInvolved::getAccidentInvolvedForAuvoToNova('ileva_nova'),
+        ];
     }
 
     public function getIlevaDatabaseCustomersForExpertiseAuvoAccount(): array
@@ -79,13 +61,5 @@ class AuvoService
             $updateAuvoCustomerJob,
             $updateAuvoTaskJob,
         ])->dispatch();
-    }
-
-    private function getHeaders(): array
-    {
-        return [
-            'Authorization' => 'Bearer ' . $this->accessToken,
-            'Content-Type' => 'application/json',
-        ];
     }
 }
