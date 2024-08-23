@@ -126,6 +126,8 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
+  AND (has.id IS NULL OR has.id != 2670)
+  AND (haso.id_store IS NULL OR haso.id_store != 2670)
 GROUP BY tipe.id_participant;
         ");
     }
@@ -243,6 +245,8 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
+  AND (has.id IS NULL OR has.id != 2670)
+  AND (haso.id_store IS NULL OR haso.id_store != 2670)
 GROUP BY tipe.id_participant;
         ");
     }
@@ -360,6 +364,8 @@ WHERE status.id_status = 6
         ),
         status.leave_at
     ) IS NULL
+  AND (has.id IS NULL OR has.id != 2670)
+  AND (haso.id_store IS NULL OR haso.id_store != 2670)
 GROUP BY tipe.id_participant;
         ");
     }
